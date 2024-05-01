@@ -39,10 +39,10 @@ In this project, the ChIP-seq analysis is carried out to learn more about ETS1 t
 
 The analysis was written in Bash using Jupyter Notebooks. This project was used in the "Regulatory Genomics" course.
 
-## Project 4: 
+## Project 4: Snakemake - SNP calling workflow
 
 In this project, the SNP calling workflow was carried out using Snakemake. 11 fastq files from 11 samples are aligned and searched for SNP variants associating with APP, SOD1, DYRK1A genes that are considered to be key genes in Alzheimer's disease.
 
 Bash and Python were both used in the project serving analyzing and plotting data. This project was used in "Management of Large-Scale Omics Data" course.
 
-## Project 5:
+## Project 5: File manipulation with Bash/Python (Basic)
