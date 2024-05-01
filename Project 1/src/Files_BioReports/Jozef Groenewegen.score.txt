@@ -1,0 +1,22 @@
+	 TEAM REPORT 
+ Made by: Jozef Groenewegen
+All alignments of bioinformaticians in the team: 
+
+	 BIO-REPORT 
+ Made by: Marc Janssens
+At time: 09-08-2023 21:43
+Alignment Score:  37819
+SNiP alignment score: 37819
+
+	 BIO-REPORT 
+ Made by: Werner Lippens
+At time: 09-08-2023 21:43
+Alignment Score:  37819
+SNiP alignment score: 37819
+
+	 BIO-REPORT 
+ Made by: Yves Colpaert
+At time: 09-08-2023 21:43
+Alignment Score:  37819
+SNiP alignment score: 37819
+
