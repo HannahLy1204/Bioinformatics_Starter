@@ -209,7 +209,7 @@ We can approximately assign cluster 2 for diabetic patients (Y), 3 for predicted
 
 Confusion matrix output:
 
-<img src="img/confusion.png" width="500" height="350">
+<img src="img/confusion.png" width="300" height="350">
 
 It seems that the prediction using clustering has high accuracy (84%). The Mcnemar’s p-value (<< 0.05) indicates a highly significant in difference between false positives and false negatives. Cluster 1 and 3 predicted correctly many individuals with the respective classification. But still, a large number of individuals having data lying between N and Y (predicted patients) would give a high uncertainty in clustering and lead to incorrect classification.
 
