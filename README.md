@@ -44,4 +44,4 @@ Bash and Python were both used in the project serving analyzing and plotting dat
 
 The HIV.fasta file is managed by an bioinformatic team, including 1 Team Leader, 1 Technician, 3 Bioinformaticians. The information of the team is stored in a text file. The goal of the project is to store the fasta file as a repository, allowing different modified alingment versions from the Bioinformaticians. Different members in the team have different permission of accessing the repository. Every modification of the genome alignment is reported.
 
-This project enhances skills in reading, writing, backing up files using Java, along with assigning the correct function of each member using OOP towards manipulating these files. This project was used in the "Introduction to OOP Programming" course.
+This project enhances skills in reading, writing, backing up files using Java, along with assigning the correct function of each member using OOP towards manipulating these files. Moreover, GUI is also implemented to view the output. This project was used in the "Introduction to OOP Programming" course.

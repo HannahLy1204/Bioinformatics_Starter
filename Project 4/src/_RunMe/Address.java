@@ -1,6 +1,6 @@
-package Constants;
+package _RunMe;
 
-public enum Address {//TO CHANGE THE CONSTANTS OF FILEPATH, ONLY ACESSING THIS ENUM CLASS
+public enum Address {//TO CHANGE THE DIRECTORY NAME, ONLY ACESSING THIS ENUM CLASS
 	//Package directory
 	FILES_GENOME("Files_Genome/"),
 	FILES_REPORT("Files_BioReports/"),
@@ -8,7 +8,7 @@ public enum Address {//TO CHANGE THE CONSTANTS OF FILEPATH, ONLY ACESSING THIS E
 	INPUT("InputFiles/"),
 	PROPERTY("InputFiles/filename.properties");//properties file address
 	
-	public static final String SOURCE = "src/";//This constant is set public to be accessed in InputReader class.
+	public static final String SOURCE = "src/";
 	
 	private final String DIR;
 

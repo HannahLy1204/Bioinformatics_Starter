@@ -1,6 +1,6 @@
 	 BIO-REPORT 
+ Lead by: Lead by: Jozef Groenewegen
  Made by: Yves Colpaert
-At time: 09-08-2023 21:43
-Alignment Score:  37819
-SNiP alignment score: 37819
+Alignment Score:  37827
+SNiP alignment score: 37827
 

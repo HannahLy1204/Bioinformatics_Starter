@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
-import Constants.Address;
+import Data_Genome.Repository;
 import Data_Genome.SNPAlignment;
 import Data_User.Bioinformatician;
 import Data_User.TeamLead;
@@ -29,8 +29,8 @@ public class InputReader {
 	private boolean isTeamFileRead;
 
 	//These variables can be used in other classes in this package. All InputReader() instances has this variable.
-	static String inputSource = Address.INPUT.getDirectory(); 
-	static String fileProperties= Address.PROPERTY.getDirectory(); 
+	private static String inputSource = Address.INPUT.getDirectory(); 
+	private static String fileProperties= Address.PROPERTY.getDirectory(); 
 
 	//Constructor, setting all non-static variables to empty.
 	public InputReader() {
@@ -63,7 +63,7 @@ public class InputReader {
 		return fileMap;		
 	}
 
-	private SNPAlignment readFASTA() throws IllegalArgumentException, FileNotFoundException, IOException{
+	public SNPAlignment readFASTA() throws IllegalArgumentException, FileNotFoundException, IOException{
 		while(!isFASTARead) {
 			//Checking if file properties is input into fileMap
 			if(fileMap.isEmpty()) {
@@ -167,8 +167,10 @@ public class InputReader {
 				}
 				//To link Leader to their own User team
 				lead.setMyTeam(users);
-				//Only TeamLead can set original Alignment from fasta input file
-				lead.setRepository(this.readFASTA());
+				//Only TeamLead can set repository from fasta input file
+				Repository storage = new Repository();
+				storage.setStorage(this.readFASTA());
+				lead.setRepository(storage);
 				isMethodExecute = true;
 			}
 		}
@@ -185,7 +187,7 @@ public class InputReader {
 			}else {
 				if (users.get(which) instanceof Bioinformatician) {
 					worker = (Bioinformatician) users.get(which);
-					//worker.setMyTeam(users); //To link Bioinformatician to their own User team
+					worker.setMyTeam(users); //To link Bioinformatician to their own User team
 				}
 				isMethodExecute = true;
 			}
@@ -203,7 +205,7 @@ public class InputReader {
 			}else {
 				if (users.get(which) instanceof TechnicalSupport) {
 					tech = (TechnicalSupport) users.get(which);
-					//tech.setMyTeam(users); //To link TechnicalSupport to their own User team
+					tech.setMyTeam(users); //To link TechnicalSupport to their own User team
 				}
 				isMethodExecute = true;
 			}

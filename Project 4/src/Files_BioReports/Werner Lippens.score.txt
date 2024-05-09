@@ -1,6 +1,6 @@
 	 BIO-REPORT 
+ Lead by: Lead by: Jozef Groenewegen
  Made by: Werner Lippens
-At time: 09-08-2023 21:43
-Alignment Score:  37819
-SNiP alignment score: 37819
+Alignment Score:  39287
+SNiP alignment score: 39287
 

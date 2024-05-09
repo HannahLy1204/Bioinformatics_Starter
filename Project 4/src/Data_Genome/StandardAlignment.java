@@ -84,13 +84,12 @@ public class StandardAlignment implements GenomeMethods{
 	}
 
 	@Override
-	public HashMap<String, String> deleteFragments(String target, String removeFragment) {
+	public void deleteFragments(String target, String removeFragment) {
 		if(alignment.containsKey(target)) {
 			String genomeSequence = alignment.get(target);
 			if(genomeSequence.contains(removeFragment)) {
 				String newGenome = genomeSequence.replace(removeFragment, "");//Create new String variable as it is immutable
 				alignment.replace(target, newGenome);
-				return alignment;
 			}else {
 				throw new IllegalArgumentException(target + " does not contain this sequence!");
 			}
@@ -140,7 +139,7 @@ public class StandardAlignment implements GenomeMethods{
 	}
 
 	@Override
-	public HashMap<String, String> replaceOccurences(String toBeReplaced, String givenFragments, String newFragments) throws IllegalArgumentException {
+	public void replaceOccurences(String toBeReplaced, String givenFragments, String newFragments) throws IllegalArgumentException {
 
 		int oldLength = givenFragments.length();
 		int newLength = newFragments.length();
@@ -156,7 +155,6 @@ public class StandardAlignment implements GenomeMethods{
 			}	
 		}else {
 			throw new IllegalArgumentException(toBeReplaced + " is not available in Alignment!");}
-		return alignment;
 
 	}
 

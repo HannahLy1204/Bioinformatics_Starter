@@ -12,6 +12,7 @@ public interface UsersMethods {
 	boolean isAccess();
 	String genomeOutput();
 	String reportOutput();
+	List<Users> getMyTeam();
 	
 	
 }

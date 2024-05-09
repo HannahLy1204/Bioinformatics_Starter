@@ -17,31 +17,36 @@ public class SNPAlignment extends StandardAlignment{
 	}
 
 	private HashMap<String,String> convertSNiP(){//The conversion should be set only in SNPAlignment class
-		Genome firstGenome = this.referenceGenome(getAlignment());
+		if (getAlignment().isEmpty()) {
+			return new LinkedHashMap<>();
+		}else {
+			Genome firstGenome = this.referenceGenome(getAlignment());
 
-		HashMap<String,String> newMap = new LinkedHashMap<>();
-		newMap.put(firstGenome.getID(), firstGenome.getSequence()); //Adding reference Genome to the newMap
+			HashMap<String,String> newMap = new LinkedHashMap<>();
+			newMap.put(firstGenome.getID(), firstGenome.getSequence()); //Adding reference Genome to the newMap
 
-		for(String x: this.getAllIdentifiers()) {
-			if(!x.equals(firstGenome.getID())) {//Skip the first genome reference in standard
-				String seq = this.getOneSequence(x);
-				String newSeq = "";
+			for(String x: this.getAllIdentifiers()) {
+				if(!x.equals(firstGenome.getID())) {//Skip the first genome reference in standard
+					String seq = this.getOneSequence(x);
+					String newSeq = "";
 
-				//Conversion of each nucleotide in genome Sequence
-				for(int i = 0; i< seq.length();i++) {
-					//Converting each common nucleotide into "."
-					if(seq.charAt(i) == firstGenome.getSequence().charAt(i)) {
-						newSeq += ".";
-					}else {
-						newSeq += seq.charAt(i);
+					//Conversion of each nucleotide in genome Sequence
+					for(int i = 0; i< seq.length();i++) {
+						//Converting each common nucleotide into "."
+						if(seq.charAt(i) == firstGenome.getSequence().charAt(i)) {
+							newSeq += ".";
+						}else {
+							newSeq += seq.charAt(i);
+						}
 					}
+					newMap.put(x, newSeq);
 				}
-				newMap.put(x, newSeq);
 			}
-		}
 
-		this.snip = newMap;
-		return snip;
+			this.snip = newMap;
+			return snip;
+		}
+		
 	}
 
 	public HashMap<String, String> getSNiPMap() {
@@ -63,9 +68,9 @@ public class SNPAlignment extends StandardAlignment{
 	}
 
 	@Override
-	public HashMap<String, String> deleteFragments(String target, String removeFragment) {
+	public void deleteFragments(String target, String removeFragment) {
 		super.deleteFragments(target,removeFragment);
-		return this.convertSNiP();
+		this.convertSNiP();
 	}
 
 	@Override
@@ -75,9 +80,9 @@ public class SNPAlignment extends StandardAlignment{
 	}
 
 	@Override
-	public HashMap<String, String> replaceOccurences(String toBeReplaced, String givenFragments, String newFragments) throws IllegalArgumentException {
+	public void replaceOccurences(String toBeReplaced, String givenFragments, String newFragments) throws IllegalArgumentException {
 		super.replaceOccurences(toBeReplaced,givenFragments, newFragments);
-		return this.convertSNiP();
+		this.convertSNiP();
 
 	}
 

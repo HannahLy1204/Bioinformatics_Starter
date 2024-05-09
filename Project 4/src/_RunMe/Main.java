@@ -1,82 +1,95 @@
 package _RunMe;
 
-//import java.util.HashMap;
-
+import Data_Genome.Repository;
 //import Data_Genome.Repository;
 import Data_Genome.SNPAlignment;
 import Data_User.Bioinformatician;
 import Data_User.TeamLead;
-//import Data_User.TechnicalSupport;
+import Data_User.TechnicalSupport;
+import _GUIProcessing.GUIProcess;
 
 public class Main {
-	static boolean isOriginalLoad = false;
 
 	public static void main(String[] args) {
 		try {
+			new GUIProcess();
+			
 			InputReader in = new InputReader();
-			TeamLead X = in.getTeamLead(); // At this point, original fasta file has been load to Repository
+			TeamLead X = in.getTeamLead(); //At this point, original fasta file has been load to Repository
 			Bioinformatician A = in.getBioinformatician(1);
 			Bioinformatician B = in.getBioinformatician(2);
 			Bioinformatician C = in.getBioinformatician(3);
-
-			SNPAlignment original = X.getOptimal();
-			// HashMap<String, String> origin = original.getAlignment();
-			// int initial = original.alignmentScore();
-			X.overwriteAlignment(original);// Original fasta file has been parse to personal Alignment
-			// Immutable problem
-
+			TechnicalSupport D = in.getTechnicalSupport(4);
+			
+			Repository original = X.getRepository();//change in Repository does not affect the current alignment
+			SNPAlignment current=  original.getStorage();
+			
+			int initial = current.alignmentScore();
+			//Parsing original FASTA file to personal alignment
+			X.overwriteAlignment(current, A);
+			X.overwriteAlignment(current, B);
+			X.overwriteAlignment(current, C);
+			
+			D.backUpData();//Backup
+			
 			SNPAlignment alignmentA = A.getPersonalAlignment();
-			A.setPersonalAlignment(alignmentA);
+			//Change in alignmentA directly affect to personalAlignment of A, since they have the same reference
 			int a1 = alignmentA.alignmentScore();
-
+			
+			
 			SNPAlignment alignmentB = B.getPersonalAlignment();
-			B.setPersonalAlignment(alignmentB);
 			int b1 = alignmentB.alignmentScore();
-
+			
+			
 			SNPAlignment alignmentC = C.getPersonalAlignment();
-			C.setPersonalAlignment(alignmentC);
 			int c1 = alignmentC.alignmentScore();
-
-			// TechnicalSupport D = in.getTechnicalSupport(4);
-
-			System.out.println(A.getPersonalAlignment());
-			System.out.println(B.getPersonalAlignment());
-			System.out.println(C.getPersonalAlignment());
-
-			/*
-			 * 
-			 * System.out.printf("The team:%n%s. %n"
-			 * + "Bioinformaticians: %s, %s, %s.%n"
-			 * + "Technical Support: %s.%n%n",A.getLeadBy(), A.getName(), B.getName(),
-			 * C.getName(),D.getName());
-			 */
-			System.out.printf("\t Personal alignment score: %n");
-			System.out.printf("%s: %d.%n"
-					+ "%s: %d.%n"
-					+ "%s: %d.%n"
-					+ "%n", A.getName(), a1, B.getName(), b1, C.getName(), c1);
-
-			alignmentA.replaceOccurences(">2001.F1.BR.01.01BR087", "TGTCCTGGGG", "AAAAAAAAAA");
+			
+			System.out.printf("Original alignment score: %d.%n%n", initial);
+			
+			//Modifying alignment and writing data to text files
+			alignmentA.replaceOccurencesAll("TGTCCTGGGG", "TGTCCTAAAA");
 			A.writeDataToFile();
-			// alignmentScore() return method is immutable, thus, it's needed to be set
-			// again
-			a1 = alignmentA.alignmentScore();
-
-			alignmentB.replaceOccurences(">2001.F1.BR.01.01BR087", "TGTCCTGGGG", "TGTCCTGGGG");
+			A.writeReportToFile();
+			a1 = alignmentA.alignmentScore(); 
+			
+			alignmentB.deleteFragments(">2001.F1.BR.01.01BR087", "TGTCCTGGGG");
 			B.writeDataToFile();
-			b1 = alignmentB.alignmentScore();
-
-			// C.writeDataToFile();
+			B.writeReportToFile();
+			b1 = alignmentB.alignmentScore(); 
+			
+			alignmentC.replaceOccurences(">2001.F1.BR.01.01BR087", "TGTCCTGGGG", "AAAAAAAAAA");
+			C.writeDataToFile();
+			C.writeReportToFile();
 			c1 = alignmentC.alignmentScore();
-			System.out.printf("\t After modification: %n"
+			
+			X.writeDataToFile();
+			X.writeReportToFile();
+			
+			System.out.printf("\t Alignment score after modification: %n"
+					+ "%s.%n"
 					+ "%s: %d.%n"
 					+ "%s: %d.%n"
-					+ "%s: %d.%n", A.getName(), a1, B.getName(), b1, C.getName(), c1);
-
-			// Check if Bioinfomatician can access Repository
-			// A.getRepository();
-			// Repository rep = X.getRepository();// this Repository cannot be set in main
-			// method
+					+ "%s: %d.%n",A.getLeadBy(),A.getName(), a1, B.getName(), b1, C.getName(), c1);
+			
+			System.out.printf("Bioinformatician has lowest score: %s.%n", X.lowestScoreAlignment().getName());
+			
+			//copying the optimal alignment to Repository
+			//current variable need to be refered again because of immutablity
+			current = X.copyAlignment(); 
+			System.out.printf("Optimal alignment score: %d.%n%n",current.alignmentScore());
+			
+			//Restoring repository from back up data
+			current = D.restoreData();
+			System.out.printf("After restore, alignment score: %d.%n",current.alignmentScore());
+			System.out.printf("Is alignment score of user equals to current? %b.%n%n",alignmentB.alignmentScore()==current.alignmentScore());
+			
+			//Clearing data
+			D.clearingData(current);
+			System.out.printf("After clearing data, current alignment is empty: %b%n", current.getAlignment().isEmpty());
+			System.out.printf("After clearing data, users' alignment is empty: %b%n", alignmentB.getAlignment().isEmpty());
+			
+			//Check if Bioinfomatician can access Repository
+			A.getRepository();
 
 		} catch (Exception e) {
 			System.out.println("INVALID!");

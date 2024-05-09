@@ -1,4 +1,6 @@
 	 BIO-REPORT 
- Lead by: Data_User.TeamLead@643b1d11
+ Lead by: Lead by: Jozef Groenewegen
  Made by: Marc Janssens
-At time: 10-08-2023 00:13
+Alignment Score:  37876
+SNiP alignment score: 37876
+

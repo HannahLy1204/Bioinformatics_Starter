@@ -2,8 +2,8 @@ package Data_User;
 
 import java.util.List;
 
-import Constants.Address;
 import Data_Genome.Repository;
+import _RunMe.Address;
 
 
 public abstract class Users implements UsersMethods {
@@ -16,7 +16,7 @@ public abstract class Users implements UsersMethods {
 	
 	//Static attributes...
 	//The same Repository for all users' instances, thus, static.
-	private Repository repository= new Repository();
+	private static Repository repository= new Repository();
 	private static Address output = Address.FILES_GENOME;
 	private static Address reports = Address.FILES_REPORT;
 
@@ -32,8 +32,10 @@ public abstract class Users implements UsersMethods {
 		this.setType(function);
 		this.setName(name);
 		this.setYearsOfExperience(year);
+		this.isAccess();
+		
 	}
-
+	
 	//Methods from the interface
 	@Override
 	public boolean isAccess() {
@@ -79,14 +81,22 @@ public abstract class Users implements UsersMethods {
 		
 	}
 	
-	//Repository cannot be access directly
+	//Check access of Users
 	public Repository getRepository() throws IllegalArgumentException{
 		if(isAccess()) {
 			return repository;
 		}else {
-			throw new IllegalArgumentException("This user is not allowed to access Repository Alignment!");
+			throw new IllegalArgumentException("This user is not allowed to access Repository!");
 		}
-	}	
+	}
+	
+	public void setRepository(Repository optimal) {
+		if(isAccess()) {
+			Users.repository=optimal;
+		}else {
+			throw new IllegalArgumentException("Only Leader is allowed to set Repository!");
+		}
+	}
 
 	public String getType() {
 		return type;
@@ -110,6 +120,10 @@ public abstract class Users implements UsersMethods {
 
 	public void setYearsOfExperience(int yearsOfExperience) {
 		this.yearsOfExperience = yearsOfExperience;
+	}
+	
+	public List<Users> getMyTeam(){
+		return myTeam;
 	}
 
 }

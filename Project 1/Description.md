@@ -55,7 +55,7 @@ We can see the similarities between diabetic classes in the distribution of some
 
 |Scatter plot: | Code Snippset |
 |----------------------|---------------|
-|<img src="img/scatterplot.png" alt="Density plot of each variable" width="600" height="350"> | #Pairwise plot for each variable (except for the dependent variable CLASS)<br/> `Dia1_numeric <- apply(Dia1[, 1:11], 2, as.numeric)` <br/> `ggpairs(data.frame(Dia1_numeric),main='Paired scatterplots of dataset')` <br/> #Take a few seconds|
+|<img src="img/scatterplot.png" alt="Scatter plot of each variable" width="600" height="350"> | #Pairwise plot for each variable (except for the dependent variable CLASS)<br/> `Dia1_numeric <- apply(Dia1[, 1:11], 2, as.numeric)` <br/> `ggpairs(data.frame(Dia1_numeric),main='Paired scatterplots of dataset')` <br/> #Take a few seconds|
 
 
 |Density plot: | |

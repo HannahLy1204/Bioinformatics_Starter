@@ -1,13 +1,11 @@
 package Data_User;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 import Data_Genome.SNPAlignment;
@@ -21,7 +19,6 @@ public class Bioinformatician extends Users{
 		super();
 		leadBy = new TeamLead();
 		personalAlignment = new SNPAlignment();
-		this.isAccess();
 	}
 
 	//Constructor
@@ -39,31 +36,8 @@ public class Bioinformatician extends Users{
 		}
 	}
 
-	//Using overloading method to set personalAligment by read text file to SNPAlignment object class or by using alignment from outside
-	public void setPersonalAlignment(SNPAlignment personalAlignment) {
-		this.personalAlignment = personalAlignment;
-	}
-
-	//Bioinformatician convert their own adjusted genome file to their own personal alignment
-	public void setPersonalAlignment() throws FileNotFoundException, IOException {
-		HashMap<String,String> fasta = personalAlignment.getAlignment();
-
-		try(BufferedReader bf = new BufferedReader(new FileReader(genomeOutput()))){
-			//since in template, there may be a null line, thus, for loop is used instead of while loop
-			//(depends on how template is designed)
-			String line = bf.readLine();
-			for (int j = 0; j<250; j++ ) {//Assuming 250 lines is enough to capture the necessary alignment
-				if(line.charAt(0) == '>') {//Identify the line contains genome name
-					String identifier = line;
-					String sequence = bf.readLine();//The following line is genome sequence 
-
-					//Make sure no genome with the same name is added again into the HashMap
-					if(!fasta.containsKey(identifier)) {
-						fasta.put(identifier, sequence);
-					}}
-			}
-			personalAlignment = new SNPAlignment(fasta);
-		}
+	public void setPersonalAlignment(HashMap<String, String>  currentData) {
+		this.personalAlignment = new SNPAlignment(new LinkedHashMap<>(currentData));//create a copy for main source
 	}
 
 	public void writeDataToFile() throws IOException {//From personalAlignment to text file
@@ -91,16 +65,13 @@ public class Bioinformatician extends Users{
 		try(PrintWriter pw = new PrintWriter(new BufferedWriter(new FileWriter(reportOutput())));){
 			pw.printf("\t BIO-REPORT %n "
 					+"Lead by: %s%n "
-					+ "Made by: %s%n%n",this.getLeadBy(), this.getName());
+					+ "Made by: %s%n",this.getLeadBy(), this.getName());
 			pw.printf("Alignment Score:  %d%n"
 					+ "SNiP alignment score: %d%n"
 					, personalAlignment.alignmentScore(),personalAlignment.alignmentScore()); //Standard and SNP have identical alignment score!!
 			pw.println();
 		}
 	}
-	
-
-
 }
 
 
