@@ -2,6 +2,10 @@
 
 This project enhance skills in analyzing single cell RNA-seq and CHiP-seq, making use of both Python (Single cell) and Bash (CHiPseq) programming language, along with IGV, iRegulon for assessing regulators, GOrila and GREAT database for GO term enrichment, i-cis-Target for ranking and enriching motifs. <i>Note that this project was running under KU Leuven server on super computer, thus, running this notebook without the correct configuration will result in errors</i>
 
+Jupyter notebooks may take some time to load in Github, alternative html file can be viewed at `htmlpreview.github.io`,
+* [Single-cell RNAseq](https://htmlpreview.github.io/?https://github.com/HannahLy1204/Bioinformatics_Starter/blob/main/Project%202/Single-cell%20RNAseq.html)
+* [CHiPseq](https://htmlpreview.github.io/?https://github.com/HannahLy1204/Bioinformatics_Starter/blob/main/Project%202/ChIP-Seq.html)
+
 ### Single-cell RNAseq:
 
 In this project, the single-cell RNA-seq analysis is carried out to learn more about the immune system in the skin and blood. The dataset is retrieved from paper: ***Single-cell analysis reveals innate lymphoid cell lineage infidelity in atopic dermatitis*** ([Natalia Alkon et al 2021](https://doi.org/10.1016/j.jaci.2021.07.025)). This study investigated role of innate lymphoid cells (ILCs) by using single-cell RNA-sequencing on skin cells and blood cells from healthy individuals and patients with atopic dermatitis (AD).
