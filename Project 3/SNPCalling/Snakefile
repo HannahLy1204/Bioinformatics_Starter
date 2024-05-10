@@ -1,0 +1,364 @@
+# Student name: Thi Hanh Nguyen Ly
+# Student ID: 0772489
+# vsc_number: vsc35109
+
+# Configuration
+
+genome_db = "/staging/leuven/stg_00079/teaching/hg38_21/chr21.fa"
+snpeff_jar = "/lustre1/project/stg_00079/teaching/I0U19a_conda_2024/share/snpeff-5.2-0/snpEff.jar"
+snpeff_genome = 'hg38'
+snpeff_db_folder = '/staging/leuven/stg_00079/teaching/snpeff_db'
+
+# Define function to filter sample names based on identifier condition
+
+sample_names, = glob_wildcards("/staging/leuven/stg_00079/teaching/1000genomes/{sample,HG0\d{3}9.*}.fq.gz")
+
+rule all:
+    input: 
+        #Fastq files selection
+        fastq=expand("000.fastq/{sample}.fq", sample=sample_names),
+        #Fastqc and bwa outputs
+        fastqc_zip=expand("010.fastqc/{sample}_fastqc.zip", sample=sample_names), 
+        rep1_png=expand("010.fastqc/{sample}_fastqc/summary.png", sample=sample_names),
+        bams = expand("020.bwa/{sample}_bwa/{sample}.bam", sample=sample_names),
+        rep2_png=expand("020.bwa/{sample}_bwa/idx_reads.png", sample=sample_names),
+        #SNP calling, filtering, annotation outputs
+        vcf="030.samtools/snps.vcf",
+        cleaned_vcf="040.cleaned/snps_cleaned.vcf",
+        snpeff = "050.snpeff/snps_annotated.vcf",
+        #Checking image for vcf files
+        rep3_png="030.samtools/plot_check/tstv_by_qual.0.png",
+        rep4_png="040.cleaned/plot_check/tstv_by_qual.0.png",
+        rep5_png="050.snpeff/plot_check/tstv_by_qual.0.png",
+        #Extra rule outputs
+        extra_vcf="genes.vcf",
+        extra_heatmap="060.genes/genes_heatmap.png"
+
+rule fastq_selection:
+    input:
+        files = "/staging/leuven/stg_00079/teaching/1000genomes/{sample}.fq.gz"
+    output:
+        "000.fastq/{sample}.fq"
+    shell:
+        """
+        cp {input.files} 000.fastq/ 
+        gunzip 000.fastq/{wildcards.sample}.fq.gz
+        
+        echo "Copy sample {wildcards.sample}.fq finished."
+        """
+
+# Running Fastqc
+rule fastqc:
+    input:
+        "000.fastq/{sample}.fq",
+    output:
+        fastqc_zip = "010.fastqc/{sample}_fastqc.zip",
+        html = "010.fastqc/{sample}_fastqc.html",
+        summary_data = "010.fastqc/{sample}_fastqc/fastqc_data.txt",
+        rep1 = report("010.fastqc/{sample}_fastqc/summary.txt", 
+                category="Fastqc", 
+                subcategory="Summary text", 
+                labels={"sample": "{sample}"})
+    log:
+         "010.fastqc/{sample}_fastqc/fail_fastqc.log"
+    shell:
+        """
+        echo ">>>Input Fastq: {input} "
+        fastqc -o 010.fastqc {input} --extract
+
+        if grep FAIL {output.rep1} >> {log}; then
+            echo "There is a FAIL. Check the fastqc_report.html for sample {wildcards.sample} for further information." >> {log}
+        else
+            echo "There is no FAIL for sample {wildcards.sample}." >> {log}
+        fi
+
+        """
+
+# Running bwa
+rule bwa:
+    input:
+        "000.fastq/{sample}.fq",
+    output:
+        bam = "020.bwa/{sample}_bwa/{sample}.bam",
+        bai = "020.bwa/{sample}_bwa/{sample}.bam.bai",
+        rep2=report("020.bwa/{sample}_bwa/idxstats_chr21.txt",
+                category="bwa plot check",
+                subcategory="Idxstats text files",
+                labels={"sample": "{sample}"})
+
+    params:
+        db = genome_db,
+    shell:
+        """
+        bwa mem {params.db} {input} \
+            | samtools sort - \
+            > {output.bam}
+        samtools index {output.bam}
+        samtools idxstats {output.bam} > 020.bwa/{wildcards.sample}_bwa/idxstats_chr21.txt
+        """
+
+#Running SNP calling:
+rule snp_calling:
+    input:
+        db=genome_db,
+        bams=expand("020.bwa/{sample}_bwa/{sample}.bam", sample=sample_names),
+    output:
+        vcf="030.samtools/snps.vcf",
+    shell:
+        """
+        echo '+-------------------------'
+        echo '| processing {input.bams}'
+        echo '+-------------------------'
+
+        bcftools mpileup -Ou -f {input.db} {input.bams} \
+             | bcftools call -mv -Ov -o {output.vcf}
+
+        echo "SNP calling finished."
+        """
+
+
+# SNP filtering
+rule snp_cleanup:
+    input:
+        db=genome_db,
+        vcf="030.samtools/snps.vcf"
+    output:
+        vcf="040.cleaned/snps_cleaned.vcf"
+    shell:
+        """
+        ( cat {input.vcf} \
+           | vt decompose - \
+           | vt normalize -n -r {input.db} - \
+           | vt uniq - \
+           | vt view -f "QUAL>20" -h - \
+           > {output.vcf} )
+
+        echo "SNP filtering finished."
+        """
+
+# SNP annotation
+rule snpeff:
+    input:
+        vcf = "040.cleaned/snps_cleaned.vcf",
+    params:
+        snpeff_db_folder = snpeff_db_folder,
+        snpeff_jar = snpeff_jar,
+        snpeff_genome = snpeff_genome,
+    log:
+        err="050.snpeff/snpEff.log",
+    output:
+        snpeff = "050.snpeff/snps_annotated.vcf",
+        html = "050.snpeff/snpEff_summary.html",
+        genetxt = "050.snpeff/snpEff_genes.txt",
+    shell:
+        """
+
+        mkdir -p 050.snpeff
+
+        java -Xmx4096m -jar \
+            {params.snpeff_jar} eff {params.snpeff_genome} \
+            -dataDir  {params.snpeff_db_folder} \
+            {input.vcf} > {output.snpeff} 2>> {log.err} || echo "Error occurred during SNP annotation" >> {log.err}
+
+        # Check if the command succeeded and print a message to the log file
+        if [ $? -eq 0 ]; then
+            echo "SNP annotation run successfully." >> {log.err}
+        fi
+
+        echo "SNP annotation finished."
+        
+        # move output files to the snpeff output folder
+        mv snpEff_genes.txt snpEff_summary.html 050.snpeff
+
+        """
+
+
+#Extra rule
+rule genes_association:
+    input:
+        anno="050.snpeff/snps_annotated.vcf"
+    output:
+        vcf="genes.vcf",
+        app="060.genes/app.vcf",
+        sod1="060.genes/sod1.vcf",
+        dyrk1a="060.genes/dyrk1a.vcf",
+        rep=report("060.genes/snps_summary.txt",
+                category="SNP association",
+                labels={"title":"SNP association summary text"})
+    shell:
+        """
+        bcftools view -i 'INFO/ANN[*] ~ "APP" || INFO/ANN[*] ~ "SOD1" || INFO/ANN[*] ~ "DYRK1A"' \
+        {input.anno} -o {output.vcf}
+
+        #Detailed information
+
+        bcftools view -i 'INFO/ANN[*] ~ "APP"' {input.anno} -o {output.app}
+        bcftools view -i 'INFO/ANN[*] ~ "SOD1"'  {input.anno} -o {output.sod1}
+        bcftools view -i 'INFO/ANN[*] ~ "DYRK1A"'  {input.anno} -o {output.dyrk1a}
+        
+        app=`grep -v '#' {input.anno} | grep "APP" | wc -l`
+        sod1=`grep -v '#' {input.anno} | grep "SOD1" | wc -l`
+        dyrk1a=`grep -v '#' {input.anno} | grep "DYRK1A" | wc -l`
+        total=`echo $((app + sod1 + dyrk1a))`
+
+       (echo -e "Number of SNPs association to the 3 genes:"\
+       "\n\t APP: $app "\
+       "\n\t SOD1: $sod1 "\
+       "\n\t DYRK1A: $dyrk1a "\
+       "\n\t Total: $total" > {output.rep})
+
+        echo "Finished finding SNP associations with APP, SOD1, DYRK1A."
+        """
+
+#Heatmap for SNP association
+identifiers=[entries for entries in sample_names] #Storing sample wildcards in list
+rule genes_heatmap:
+    input:
+        vcf="genes.vcf",
+    output:
+        heatmap_png=report("060.genes/genes_heatmap.png",
+                        category="SNP association",
+                        labels={"title":"SNP association heatmap"})
+    params:
+        individual=identifiers,
+        groups = ['APP', 'SOD1', 'DYRK1A']
+    run:
+        import pandas as pd
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+        
+        #Redefined params.individual:
+        names= ['020.bwa/{}_bwa/{}.bam'.format(item, item) for item in params.individual]
+
+        #Load data
+        vcf_df=pd.read_csv(input.vcf, sep='\t', comment='#', header=None)
+        colu=['CHROM', 'POS','ID','REF','ALT','QUAL','FILTER','INFO','FORMAT']
+        colu.extend(names)  
+        vcf_df.columns=colu
+
+        #Dataframe for heatmap
+        counts_df = pd.DataFrame(index=names,  columns=params.groups)
+
+        for group in params.groups:
+            filtered_df = vcf_df[vcf_df['INFO'].str.contains(group)]
+            counts_df[group] = filtered_df[names].apply(lambda col: col[~col.str.contains("\./\.:")].count())
+
+        #Rename index for interpretation
+        counts_df.index=params.individual
+
+        # Plotting the heatmap
+        plt.figure(figsize=(12, 8))
+        sns.heatmap(counts_df, annot=True, cmap='viridis', fmt='d')
+        plt.tight_layout(rect=[0.02, 0.02, 1.05, 0.95])
+        plt.title('SNP associations')
+        plt.xlabel('GENES')
+        plt.ylabel('Samples')
+        plt.savefig(output.heatmap_png)
+
+
+#########################################################
+# REPORT IMAGE
+rule fastqc_report:
+    input:
+        summary_txt = "010.fastqc/{sample}_fastqc/summary.txt",
+    output:
+        status_png = report("010.fastqc/{sample}_fastqc/summary.png",
+                         category='Fastqc',
+                         subcategory='Fastqc Report Image',
+                         labels={"sample": "{sample}"})
+
+    run:
+        import pandas as pd
+        import seaborn as sns
+        import matplotlib.pyplot as plt
+
+        #load data
+        data = pd.read_csv(input.summary_txt, sep="\t", header=None)
+        data.columns = ['status', 'test', 'sample']
+
+        #assign dummy x value for scatterplot
+        data['x'] = 1
+
+        #color pallette
+        custom = {"PASS": "green", "WARN": "orange", "FAIL": "red"} 
+
+        #create image
+        fig = plt.figure(figsize=(6, 7))
+        ax = plt.gca()
+        sns.scatterplot(data, x='x', y='test', hue='status', palette=custom, s=200, ax=ax)
+        ax.get_xaxis().set_visible(False)
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+        plt.subplots_adjust(left=0.4, right=0.8, top=0.9, bottom=0.1) 
+        plt.title(wildcards.sample)
+        plt.savefig(output.status_png)
+
+
+
+rule bwa_report:
+      input:
+          idx ="020.bwa/{sample}_bwa/idxstats_chr21.txt"
+      output:
+          idx_png = report("020.bwa/{sample}_bwa/idx_reads.png",
+                           category="bwa plot check",
+                           subcategory='Bwa Report Image',
+                           labels={"sample": "{sample}"})
+      run:
+        import matplotlib.pyplot as plt
+        import pandas as pd
+        
+        #load data
+        data = pd.read_csv(input.idx, sep="\t", header=None)
+        data.columns = ['Reference', 'Length', 'Mapped', 'Unmapped']
+
+        # Extract mapped and unmapped reads data
+        mapped_reads = data['Mapped'].iloc[0]  
+        unmapped_reads = data['Unmapped'].iloc[1]  
+
+        # Data for the pie chart
+        labels = ['Mapped Reads', 'Unmapped Reads']
+        sizes = [mapped_reads, unmapped_reads]
+
+        # Plotting the pie chart
+        plt.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+        plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle
+
+        # Adding number of reads
+        plt.text(-1.5, -1.2, f'Mapped Reads: {mapped_reads}', fontsize=10)
+        plt.text(-1.5, -1.4, f'Unmapped Reads: {unmapped_reads}', fontsize=10)
+
+        plt.title('Mapped Reads vs Unmapped Reads')
+        plt.savefig(output.idx_png)
+
+
+
+rule snp_plot_check:
+    input:
+        vcf_3="030.samtools/snps.vcf",
+        vcf_4="040.cleaned/snps_cleaned.vcf",
+        vcf_5="050.snpeff/snps_annotated.vcf",
+    output:
+        vchk_3="030.samtools/snps.vchk",
+        vchk_4="040.cleaned/snps_cleaned.vchk",
+        vchk_5="050.snpeff/snps_annotated.vchk",
+        #Snakemake report
+        rep3=report("030.samtools/plot_check/tstv_by_qual.0.png",
+                category= "SNP plot check",
+                labels={"Transistion/Transversion by QUAL": "SNP calling"}),
+        rep4=report("040.cleaned/plot_check/tstv_by_qual.0.png",
+                category= "SNP plot check",
+                labels={"Transistion/Transversion by QUAL": "SNP filtering"}),
+        rep5=report("050.snpeff/plot_check/tstv_by_qual.0.png",
+                category= "SNP plot check",
+                labels={"Transistion/Transversion by QUAL": "SNP annotation"})
+    shell:
+        """
+        bcftools stats {input.vcf_3} > {output.vchk_3}
+        bcftools stats {input.vcf_4} > {output.vchk_4}
+        bcftools stats {input.vcf_5} > {output.vchk_5}
+
+        #I choose not to generate pdf files, since this somehow lead to error
+        plot-vcfstats -P -p 030.samtools/plot_check {output.vchk_3}
+        plot-vcfstats -P -p 040.cleaned/plot_check {output.vchk_4}
+        plot-vcfstats -P -p 050.snpeff/plot_check {output.vchk_5}
+        """
+
