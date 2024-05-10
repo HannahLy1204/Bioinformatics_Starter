@@ -20,6 +20,7 @@ The final output folder 060.genes/ is uploaded but the other outputs are too lar
 
 ## Output reports:
 
+The snps annotation summary can be found in the [snpEff_summary.html](https://htmlpreview.github.io/?https://github.com/HannahLy1204/Bioinformatics_Starter/blob/main/Project%203/SNPCalling/snpEff_summary.html)
 The fastqc gives the summary.txt for each sample, whether each step of checking quality is pass (green) or warn (yellow) or fail (red):
 
 <img src="img/fastqc.png" width=400 height=400>
@@ -30,6 +31,6 @@ The `idxstats` of the .bam files can be viewed with `samtools idxstats`, which s
 <img src="img/bwa.png" width=400 height=400>
 
 ------
-SNP association heatmap, number of snps of each sample associates with each APP, SOD1, SYRK1A genes. The input of the heatmap is stored in `genes.vcf` file, after filtering the snps_annotated.vcf with `bcftoold view`. Detail code for plotting the map can be found in the Snakefile. All plots that are generate using snakemake rule can be found in the [snakemake report]().
+SNP association heatmap, number of snps of each sample associates with each APP, SOD1, SYRK1A genes. The input of the heatmap is stored in `genes.vcf` file, after filtering the snps_annotated.vcf with `bcftoold view`. Detail code for plotting the map can be found in the Snakefile. All plots that are generate using snakemake rule can be found in the [snakemake report html](https://htmlpreview.github.io/?https://github.com/HannahLy1204/Bioinformatics_Starter/blob/main/Project%203/SNPCalling/snake_report.html).
 
 <img src="img/genes_heatmap.png" width=400 height=400>

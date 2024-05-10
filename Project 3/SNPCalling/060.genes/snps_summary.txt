@@ -1,0 +1,5 @@
+Number of SNPs association to the 3 genes: 
+	 APP: 1194  
+	 SOD1: 177  
+	 DYRK1A: 513  
+	 Total: 1884
